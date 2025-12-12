@@ -9,16 +9,6 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Recharts -->
-    <script src="https://unpkg.com/recharts@2.5.0/dist/Recharts.js"></script>
-    
     <style>
         * {
             margin: 0;
@@ -30,474 +20,468 @@
             background-color: #0F172A;
             color: white;
         }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 200px;
+            padding: 20px;
+        }
+        .bar-item {
+            flex: 1;
+            max-width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .bar {
+            width: 100%;
+            background: linear-gradient(to top, #00B8D4, #0EA5E9);
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+        }
+        .bar:hover {
+            opacity: 0.8;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-in {
+            animation: slideIn 0.5s ease forwards;
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
+    <script>
+        // Simple state management
+        let currentPage = 'landing';
+        let userName = '';
 
-        const VitalFlowApp = () => {
-            const [currentPage, setCurrentPage] = useState('landing');
-            const [userName, setUserName] = useState('');
+        const activities = [
+            { id: 1, type: 'Running', time: '6:30 AM', distance: '5.2 km', duration: '35 min', calories: 320 },
+            { id: 2, type: 'Breakfast', time: '8:00 AM', calories: 450, category: 'Healthy' },
+            { id: 3, type: 'Gym Session', time: '5:30 PM', duration: '1 hour', calories: 280 }
+        ];
 
-            // Random names pool
-            useEffect(() => {
-                const names = ['Alex', 'Sam', 'Jordan', 'Casey', 'Morgan', 'Taylor', 'Riley', 'Avery', 'Jamie', 'Quinn'];
-                const randomName = names[Math.floor(Math.random() * names.length)];
-                setUserName(randomName);
-            }, []);
-            const [activities] = useState([
-                { id: 1, type: 'Running', time: '6:30 AM', distance: '5.2 km', duration: '35 min', calories: 320 },
-                { id: 2, type: 'Breakfast', time: '8:00 AM', calories: 450, category: 'Healthy' },
-                { id: 3, type: 'Gym Session', time: '5:30 PM', duration: '1 hour', calories: 280 }
-            ]);
-            const [goals] = useState([
-                { name: 'Lose 5 kg', progress: 64, current: '3.2 kg lost', color: '#E74C3C' },
-                { name: 'Run 50 km/week', progress: 64, current: '32 km completed', color: '#3498DB' },
-                { name: 'Drink 8 glasses daily', progress: 86, current: '6 days streak', color: '#00B8D4' }
-            ]);
-            const [streak] = useState(7);
-            const [stats] = useState({
-                steps: 8234,
-                stepsGoal: 10000,
-                calories: 450,
-                caloriesGoal: 2000,
-                water: 6,
-                waterGoal: 8
+        const goals = [
+            { name: 'Lose 5 kg', progress: 64, current: '3.2 kg lost', color: '#E74C3C' },
+            { name: 'Run 50 km/week', progress: 64, current: '32 km completed', color: '#3498DB' },
+            { name: 'Drink 8 glasses daily', progress: 86, current: '6 days streak', color: '#00B8D4' }
+        ];
+
+        const streak = 7;
+        const stats = {
+            steps: 8234,
+            stepsGoal: 10000,
+            calories: 450,
+            caloriesGoal: 2000,
+            water: 6,
+            waterGoal: 8
+        };
+
+        const weeklyData = [
+            { day: 'Mon', steps: 8500 },
+            { day: 'Tue', steps: 9200 },
+            { day: 'Wed', steps: 7800 },
+            { day: 'Thu', steps: 10500 },
+            { day: 'Fri', steps: 8234 },
+            { day: 'Sat', steps: 6500 },
+            { day: 'Sun', steps: 9100 }
+        ];
+
+        // Set random name on load
+        const names = ['Alex', 'Sam', 'Jordan', 'Casey', 'Morgan', 'Taylor', 'Riley', 'Avery', 'Jamie', 'Quinn'];
+        userName = names[Math.floor(Math.random() * names.length)];
+
+        function render() {
+            const root = document.getElementById('root');
+            
+            if (currentPage === 'landing') {
+                root.innerHTML = renderLanding();
+            } else if (currentPage === 'dashboard') {
+                root.innerHTML = renderDashboard();
+            } else if (currentPage === 'activity') {
+                root.innerHTML = renderActivity();
+            } else if (currentPage === 'goals') {
+                root.innerHTML = renderGoals();
+            }
+
+            // Add event listeners after render
+            attachEventListeners();
+        }
+
+        function attachEventListeners() {
+            document.querySelectorAll('[data-page]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentPage = el.getAttribute('data-page');
+                    render();
+                });
             });
+        }
 
-            const weeklyData = [
-                { day: 'Mon', steps: 8500 },
-                { day: 'Tue', steps: 9200 },
-                { day: 'Wed', steps: 7800 },
-                { day: 'Thu', steps: 10500 },
-                { day: 'Fri', steps: 8234 },
-                { day: 'Sat', steps: 6500 },
-                { day: 'Sun', steps: 9100 }
-            ];
-
-            // Landing Page Component
-            const LandingPage = () => (
-                <div className="min-h-screen bg-gradient-to-br from-cyan-500 via-purple-600 to-indigo-700">
-                    <nav className="bg-white/10 backdrop-blur-md border-b border-white/20">
-                        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <div className="w-10 h-10 bg-cyan-400 rounded-full flex items-center justify-center text-white font-bold text-xl">V</div>
-                                <span className="text-2xl font-bold text-white">VitalFlow</span>
+        function renderLanding() {
+            return `
+                <div class="min-h-screen bg-gradient-to-br from-cyan-500 via-purple-600 to-indigo-700">
+                    <nav class="bg-white/10 backdrop-blur-md border-b border-white/20">
+                        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <div class="w-10 h-10 bg-cyan-400 rounded-full flex items-center justify-center text-white font-bold text-xl">V</div>
+                                <span class="text-2xl font-bold text-white">VitalFlow</span>
                             </div>
-                            <button
-                                onClick={() => setCurrentPage('dashboard')}
-                                className="bg-white text-purple-600 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition"
-                            >
+                            <button data-page="dashboard" class="bg-white text-purple-600 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition cursor-pointer">
                                 Try Demo
                             </button>
                         </div>
                     </nav>
 
-                    <div className="max-w-7xl mx-auto px-6 py-20">
-                        <div className="text-center mb-16">
-                            <h1 className="text-6xl font-bold text-white mb-6">
+                    <div class="max-w-7xl mx-auto px-6 py-20">
+                        <div class="text-center mb-16 animate-in">
+                            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
                                 Your Health Journey,<br/>Simplified
                             </h1>
-                            <p className="text-2xl text-cyan-100 mb-8 max-w-3xl mx-auto">
+                            <p class="text-xl md:text-2xl text-cyan-100 mb-8 max-w-3xl mx-auto">
                                 VitalFlow helps you build sustainable health habits through intuitive tracking, 
                                 smart insights, and supportive community features.
                             </p>
-                            <div className="flex gap-4 justify-center flex-wrap">
-                                <button
-                                    onClick={() => setCurrentPage('dashboard')}
-                                    className="bg-white text-purple-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition shadow-lg"
-                                >
+                            <div class="flex gap-4 justify-center flex-wrap">
+                                <button data-page="dashboard" class="bg-white text-purple-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition shadow-lg cursor-pointer">
                                     Launch Demo →
                                 </button>
-                                <a 
-                                    href="#features"
-                                    className="bg-purple-600/30 backdrop-blur text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-purple-600/40 transition border-2 border-white/30"
-                                >
+                                <a href="#features" class="bg-purple-600/30 backdrop-blur text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-purple-600/40 transition border-2 border-white/30">
                                     Learn More
                                 </a>
                             </div>
                         </div>
 
-                        <div id="features" className="grid md:grid-cols-3 gap-8 mb-20">
-                            <div className="bg-white/10 backdrop-blur-lg p-8 rounded-2xl border border-white/20">
-                                <div className="text-5xl mb-4">📊</div>
-                                <h3 className="text-2xl font-bold text-white mb-3">Smart Tracking</h3>
-                                <p className="text-cyan-100">
+                        <div id="features" class="grid md:grid-cols-3 gap-8 mb-20">
+                            <div class="bg-white/10 backdrop-blur-lg p-8 rounded-2xl border border-white/20 animate-in">
+                                <div class="text-5xl mb-4">📊</div>
+                                <h3 class="text-2xl font-bold text-white mb-3">Smart Tracking</h3>
+                                <p class="text-cyan-100">
                                     Log workouts, meals, and activities in under 60 seconds with quick-add shortcuts and smart defaults.
                                 </p>
                             </div>
 
-                            <div className="bg-white/10 backdrop-blur-lg p-8 rounded-2xl border border-white/20">
-                                <div className="text-5xl mb-4">🎯</div>
-                                <h3 className="text-2xl font-bold text-white mb-3">Goal Tracking</h3>
-                                <p className="text-cyan-100">
+                            <div class="bg-white/10 backdrop-blur-lg p-8 rounded-2xl border border-white/20 animate-in" style="animation-delay: 0.1s">
+                                <div class="text-5xl mb-4">🎯</div>
+                                <h3 class="text-2xl font-bold text-white mb-3">Goal Tracking</h3>
+                                <p class="text-cyan-100">
                                     Set personalized goals and track progress with visual indicators that celebrate your achievements.
                                 </p>
                             </div>
 
-                            <div className="bg-white/10 backdrop-blur-lg p-8 rounded-2xl border border-white/20">
-                                <div className="text-5xl mb-4">👥</div>
-                                <h3 className="text-2xl font-bold text-white mb-3">Supportive Community</h3>
-                                <p className="text-cyan-100">
+                            <div class="bg-white/10 backdrop-blur-lg p-8 rounded-2xl border border-white/20 animate-in" style="animation-delay: 0.2s">
+                                <div class="text-5xl mb-4">👥</div>
+                                <h3 class="text-2xl font-bold text-white mb-3">Supportive Community</h3>
+                                <p class="text-cyan-100">
                                     Join challenges, connect with friends, and stay motivated through positive encouragement.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="bg-white/10 backdrop-blur-lg p-12 rounded-2xl border border-white/20 text-center mb-20">
-                            <h2 className="text-4xl font-bold text-white mb-6">The Problem We Solve</h2>
-                            <div className="text-7xl font-bold text-cyan-300 mb-4">77%</div>
-                            <p className="text-2xl text-white mb-4">of users abandon health apps within 30 days</p>
-                            <p className="text-lg text-cyan-100 max-w-3xl mx-auto">
+                        <div class="bg-white/10 backdrop-blur-lg p-12 rounded-2xl border border-white/20 text-center mb-20">
+                            <h2 class="text-4xl font-bold text-white mb-6">The Problem We Solve</h2>
+                            <div class="text-7xl font-bold text-cyan-300 mb-4">77%</div>
+                            <p class="text-2xl text-white mb-4">of users abandon health apps within 30 days</p>
+                            <p class="text-lg text-cyan-100 max-w-3xl mx-auto">
                                 VitalFlow addresses this through simplified interfaces, reduced manual entry friction, 
                                 thoughtful gamification, and evidence-based behavior change support.
                             </p>
                         </div>
 
-                        <div className="text-center">
-                            <h2 className="text-4xl font-bold text-white mb-8">Proven Results</h2>
-                            <div className="grid md:grid-cols-3 gap-8">
-                                <div>
-                                    <div className="text-5xl font-bold text-cyan-300 mb-2">94%</div>
-                                    <p className="text-white text-lg">Task Completion Rate</p>
-                                    <p className="text-cyan-100 text-sm mt-2">vs. 78% industry average</p>
+                        <div class="text-center">
+                            <h2 class="text-4xl font-bold text-white mb-8">Proven Results</h2>
+                            <div class="grid md:grid-cols-3 gap-8">
+                                <div class="animate-in">
+                                    <div class="text-5xl font-bold text-cyan-300 mb-2">94%</div>
+                                    <p class="text-white text-lg">Task Completion Rate</p>
+                                    <p class="text-cyan-100 text-sm mt-2">vs. 78% industry average</p>
                                 </div>
-                                <div>
-                                    <div className="text-5xl font-bold text-cyan-300 mb-2">82.3</div>
-                                    <p className="text-white text-lg">System Usability Score</p>
-                                    <p className="text-cyan-100 text-sm mt-2">vs. 68 industry average</p>
+                                <div class="animate-in" style="animation-delay: 0.1s">
+                                    <div class="text-5xl font-bold text-cyan-300 mb-2">82.3</div>
+                                    <p class="text-white text-lg">System Usability Score</p>
+                                    <p class="text-cyan-100 text-sm mt-2">vs. 68 industry average</p>
                                 </div>
-                                <div>
-                                    <div className="text-5xl font-bold text-cyan-300 mb-2">25</div>
-                                    <p className="text-white text-lg">User Interviews</p>
-                                    <p className="text-cyan-100 text-sm mt-2">Extensive research conducted</p>
+                                <div class="animate-in" style="animation-delay: 0.2s">
+                                    <div class="text-5xl font-bold text-cyan-300 mb-2">25</div>
+                                    <p class="text-white text-lg">User Interviews</p>
+                                    <p class="text-cyan-100 text-sm mt-2">Extensive research conducted</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <footer className="bg-black/20 backdrop-blur-md border-t border-white/10 mt-20">
-                        <div className="max-w-7xl mx-auto px-6 py-8 text-center text-cyan-100">
-                            <p className="mb-2 font-semibold">VitalFlow - Health and Wellness Tracking Application</p>
-                            <p className="text-sm">Created by Lokesh Maddineni | V.R. Siddhartha Engineering College | 2025</p>
-                            <p className="text-xs mt-2 text-cyan-200">UI/UX Design Project</p>
+                    <footer class="bg-black/20 backdrop-blur-md border-t border-white/10 mt-20">
+                        <div class="max-w-7xl mx-auto px-6 py-8 text-center text-cyan-100">
+                            <p class="mb-2 font-semibold">VitalFlow - Health and Wellness Tracking Application</p>
+                            <p class="text-sm">Created by Lokesh Maddineni | V.R. Siddhartha Engineering College | 2025</p>
+                            <p class="text-xs mt-2 text-cyan-200">UI/UX Design Project</p>
                         </div>
                     </footer>
                 </div>
-            );
+            `;
+        }
 
-            // Progress Ring Component
-            const ProgressRing = ({ value, max, color, label }) => {
-                const percentage = (value / max) * 100;
-                const circumference = 2 * Math.PI * 40;
-                const offset = circumference * (1 - percentage / 100);
+        function renderProgressRing(value, max, color, label) {
+            const percentage = (value / max) * 100;
+            const circumference = 2 * Math.PI * 40;
+            const offset = circumference * (1 - percentage / 100);
 
-                return (
-                    <div className="bg-slate-800 p-6 rounded-2xl text-center">
-                        <div className="relative w-24 h-24 mx-auto mb-3">
-                            <svg className="w-full h-full transform -rotate-90">
-                                <circle cx="48" cy="48" r="40" stroke="#374151" strokeWidth="8" fill="none" />
-                                <circle 
-                                    cx="48" cy="48" r="40" 
-                                    stroke={color} 
-                                    strokeWidth="8" 
-                                    fill="none"
-                                    strokeDasharray={circumference}
-                                    strokeDashoffset={offset}
-                                    strokeLinecap="round"
-                                    style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-                                />
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-2xl font-bold text-white">{value}</span>
-                            </div>
-                        </div>
-                        <p className="text-sm text-gray-400">{label}</p>
-                        <p className="text-xs text-gray-500">{value}/{max}</p>
-                    </div>
-                );
-            };
-
-            // Dashboard Component
-            const Dashboard = () => (
-                <div className="pb-20">
-                    <div className="bg-slate-800 p-6 border-b border-slate-700">
-                        <div className="flex justify-between items-center">
-                            <button onClick={() => setCurrentPage('landing')} className="text-cyan-400 hover:text-cyan-300">
-                                ← Back
-                            </button>
-                            <h1 className="text-2xl font-bold text-white">VitalFlow</h1>
-                            <div className="relative">
-                                <span className="text-2xl">🔔</span>
-                                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</div>
-                            </div>
+            return `
+                <div class="bg-slate-800 p-6 rounded-2xl text-center">
+                    <div class="relative w-24 h-24 mx-auto mb-3">
+                        <svg class="w-full h-full transform -rotate-90">
+                            <circle cx="48" cy="48" r="40" stroke="#374151" stroke-width="8" fill="none" />
+                            <circle 
+                                cx="48" cy="48" r="40" 
+                                stroke="${color}" 
+                                stroke-width="8" 
+                                fill="none"
+                                stroke-dasharray="${circumference}"
+                                stroke-dashoffset="${offset}"
+                                stroke-linecap="round"
+                                style="transition: stroke-dashoffset 0.5s ease"
+                            />
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-2xl font-bold text-white">${value}</span>
                         </div>
                     </div>
+                    <p class="text-sm text-gray-400">${label}</p>
+                    <p class="text-xs text-gray-500">${value}/${max}</p>
+                </div>
+            `;
+        }
 
-                    <div className="p-6">
-                        <h2 className="text-2xl font-bold text-white mb-2">Good Morning, {userName}!</h2>
-                        <p className="text-gray-400 mb-6">Here's your health summary for today</p>
+        function renderDashboard() {
+            const maxSteps = Math.max(...weeklyData.map(d => d.steps));
+            
+            return `
+                <div class="min-h-screen bg-slate-900 max-w-2xl mx-auto pb-20">
+                    <div class="bg-slate-800 p-6 border-b border-slate-700">
+                        <div class="flex justify-between items-center">
+                            <button data-page="landing" class="text-cyan-400 hover:text-cyan-300 cursor-pointer">← Back</button>
+                            <h1 class="text-2xl font-bold text-white">VitalFlow</h1>
+                            <div class="relative">
+                                <span class="text-2xl">🔔</span>
+                                <div class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</div>
+                            </div>
+                        </div>
+                    </div>
 
-                        <div className="grid grid-cols-3 gap-4 mb-8">
-                            <ProgressRing value={stats.steps} max={stats.stepsGoal} color="#3498DB" label="Steps" />
-                            <ProgressRing value={stats.calories} max={stats.caloriesGoal} color="#E74C3C" label="Calories" />
-                            <ProgressRing value={stats.water} max={stats.waterGoal} color="#00B8D4" label="Water" />
+                    <div class="p-6">
+                        <h2 class="text-2xl font-bold text-white mb-2">Good Morning, ${userName}!</h2>
+                        <p class="text-gray-400 mb-6">Here's your health summary for today</p>
+
+                        <div class="grid grid-cols-3 gap-4 mb-8">
+                            ${renderProgressRing(stats.steps, stats.stepsGoal, '#3498DB', 'Steps')}
+                            ${renderProgressRing(stats.calories, stats.caloriesGoal, '#E74C3C', 'Calories')}
+                            ${renderProgressRing(stats.water, stats.waterGoal, '#00B8D4', 'Water')}
                         </div>
 
-                        <div className="mb-8">
-                            <h3 className="text-lg font-bold text-white mb-4">Quick Actions</h3>
-                            <div className="grid grid-cols-3 gap-4">
-                                <button 
-                                    onClick={() => setCurrentPage('activity')}
-                                    className="bg-slate-800 p-6 rounded-2xl hover:bg-slate-700 transition text-center"
-                                >
-                                    <div className="text-4xl mb-2">💪</div>
-                                    <p className="text-sm text-white font-medium">Log Workout</p>
+                        <div class="mb-8">
+                            <h3 class="text-lg font-bold text-white mb-4">Quick Actions</h3>
+                            <div class="grid grid-cols-3 gap-4">
+                                <button data-page="activity" class="bg-slate-800 p-6 rounded-2xl hover:bg-slate-700 transition text-center cursor-pointer">
+                                    <div class="text-4xl mb-2">💪</div>
+                                    <p class="text-sm text-white font-medium">Log Workout</p>
                                 </button>
-                                <button className="bg-slate-800 p-6 rounded-2xl hover:bg-slate-700 transition text-center">
-                                    <div className="text-4xl mb-2">🍽️</div>
-                                    <p className="text-sm text-white font-medium">Log Meal</p>
+                                <button class="bg-slate-800 p-6 rounded-2xl hover:bg-slate-700 transition text-center cursor-pointer">
+                                    <div class="text-4xl mb-2">🍽️</div>
+                                    <p class="text-sm text-white font-medium">Log Meal</p>
                                 </button>
-                                <button className="bg-slate-800 p-6 rounded-2xl hover:bg-slate-700 transition text-center">
-                                    <div className="text-4xl mb-2">💧</div>
-                                    <p className="text-sm text-white font-medium">Add Water</p>
+                                <button class="bg-slate-800 p-6 rounded-2xl hover:bg-slate-700 transition text-center cursor-pointer">
+                                    <div class="text-4xl mb-2">💧</div>
+                                    <p class="text-sm text-white font-medium">Add Water</p>
                                 </button>
                             </div>
                         </div>
 
-                        <div className="mb-8">
-                            <h3 className="text-lg font-bold text-white mb-4">Today's Activity</h3>
-                            {activities.map(activity => (
-                                <div key={activity.id} className="bg-slate-800 p-4 rounded-xl mb-3 flex justify-between items-center">
+                        <div class="mb-8">
+                            <h3 class="text-lg font-bold text-white mb-4">Today's Activity</h3>
+                            ${activities.map(activity => `
+                                <div class="bg-slate-800 p-4 rounded-xl mb-3 flex justify-between items-center">
                                     <div>
-                                        <p className="text-white font-semibold">{activity.type}</p>
-                                        <p className="text-sm text-gray-400">{activity.time}</p>
+                                        <p class="text-white font-semibold">${activity.type}</p>
+                                        <p class="text-sm text-gray-400">${activity.time}</p>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-cyan-400 font-medium">{activity.distance || activity.duration || `${activity.calories} cal`}</p>
-                                        <p className="text-xs text-gray-500">{activity.category || 'Activity'}</p>
+                                    <div class="text-right">
+                                        <p class="text-cyan-400 font-medium">${activity.distance || activity.duration || activity.calories + ' cal'}</p>
+                                        <p class="text-xs text-gray-500">${activity.category || 'Activity'}</p>
                                     </div>
                                 </div>
-                            ))}
+                            `).join('')}
                         </div>
 
-                        <div className="bg-slate-800 p-6 rounded-2xl">
-                            <h3 className="text-lg font-bold text-white mb-4">Weekly Steps</h3>
-                            <ResponsiveContainer width="100%" height={200}>
-                                <BarChart data={weeklyData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                    <XAxis dataKey="day" stroke="#9CA3AF" />
-                                    <YAxis stroke="#9CA3AF" />
-                                    <Tooltip 
-                                        contentStyle={{ backgroundColor: '#1E293B', border: 'none', borderRadius: '8px', color: '#FFF' }}
-                                    />
-                                    <Bar dataKey="steps" fill="#00B8D4" radius={[8, 8, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                        <div class="bg-slate-800 p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold text-white mb-4">Weekly Steps</h3>
+                            <div class="bar-chart bg-slate-900/50 rounded-xl">
+                                ${weeklyData.map(data => `
+                                    <div class="bar-item">
+                                        <div class="bar" style="height: ${(data.steps / maxSteps) * 100}%"></div>
+                                        <span class="text-xs text-gray-400">${data.day}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
                     </div>
+
+                    ${renderBottomNav('dashboard')}
                 </div>
-            );
+            `;
+        }
 
-            // Activity Logging Component
-            const ActivityLogging = () => (
-                <div className="pb-20">
-                    <div className="bg-slate-800 p-6 border-b border-slate-700">
-                        <div className="flex justify-between items-center">
-                            <button onClick={() => setCurrentPage('dashboard')} className="text-cyan-400 hover:text-cyan-300 text-xl">
-                                ←
-                            </button>
-                            <h1 className="text-xl font-bold text-white">Log Workout</h1>
-                            <button 
-                                onClick={() => setCurrentPage('dashboard')}
-                                className="text-green-400 text-xl font-bold"
-                            >
-                                ✓
-                            </button>
+        function renderActivity() {
+            return `
+                <div class="min-h-screen bg-slate-900 max-w-2xl mx-auto pb-20">
+                    <div class="bg-slate-800 p-6 border-b border-slate-700">
+                        <div class="flex justify-between items-center">
+                            <button data-page="dashboard" class="text-cyan-400 hover:text-cyan-300 text-xl cursor-pointer">←</button>
+                            <h1 class="text-xl font-bold text-white">Log Workout</h1>
+                            <button data-page="dashboard" class="text-green-400 text-xl font-bold cursor-pointer">✓</button>
                         </div>
                     </div>
 
-                    <div className="p-6">
-                        <h3 className="text-lg font-bold text-white mb-4">Activity Type</h3>
-                        <div className="grid grid-cols-4 gap-4 mb-8">
-                            {['🏃 Running', '🚴 Cycling', '🏋️ Strength', '🧘 Yoga'].map(activity => (
-                                <button key={activity} className="bg-slate-800 p-6 rounded-2xl hover:bg-cyan-900 transition border-2 border-cyan-500 text-center">
-                                    <div className="text-3xl mb-2">{activity.split(' ')[0]}</div>
-                                    <p className="text-sm text-white">{activity.split(' ')[1]}</p>
+                    <div class="p-6">
+                        <h3 class="text-lg font-bold text-white mb-4">Activity Type</h3>
+                        <div class="grid grid-cols-4 gap-4 mb-8">
+                            ${['🏃 Running', '🚴 Cycling', '🏋️ Strength', '🧘 Yoga'].map(activity => `
+                                <button class="bg-slate-800 p-6 rounded-2xl hover:bg-cyan-900 transition border-2 border-cyan-500 text-center cursor-pointer">
+                                    <div class="text-3xl mb-2">${activity.split(' ')[0]}</div>
+                                    <p class="text-sm text-white">${activity.split(' ')[1]}</p>
                                 </button>
-                            ))}
+                            `).join('')}
                         </div>
 
-                        <div className="space-y-6">
+                        <div class="space-y-6">
                             <div>
-                                <label className="block text-white font-semibold mb-2">Duration</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="30 minutes"
-                                    className="w-full bg-slate-800 text-white p-4 rounded-xl border border-slate-700 focus:border-cyan-500 outline-none"
-                                />
+                                <label class="block text-white font-semibold mb-2">Duration</label>
+                                <input type="text" placeholder="30 minutes" class="w-full bg-slate-800 text-white p-4 rounded-xl border border-slate-700 focus:border-cyan-500 outline-none">
                             </div>
-
                             <div>
-                                <label className="block text-white font-semibold mb-2">Intensity</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="Moderate"
-                                    className="w-full bg-slate-800 text-white p-4 rounded-xl border border-slate-700 focus:border-cyan-500 outline-none"
-                                />
+                                <label class="block text-white font-semibold mb-2">Intensity</label>
+                                <input type="text" placeholder="Moderate" class="w-full bg-slate-800 text-white p-4 rounded-xl border border-slate-700 focus:border-cyan-500 outline-none">
                             </div>
-
                             <div>
-                                <label className="block text-white font-semibold mb-2">Calories Burned</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="250 cal (estimated)"
-                                    className="w-full bg-slate-800 text-white p-4 rounded-xl border border-slate-700 focus:border-cyan-500 outline-none"
-                                />
+                                <label class="block text-white font-semibold mb-2">Calories Burned</label>
+                                <input type="text" placeholder="250 cal (estimated)" class="w-full bg-slate-800 text-white p-4 rounded-xl border border-slate-700 focus:border-cyan-500 outline-none">
                             </div>
-
                             <div>
-                                <label className="block text-white font-semibold mb-2">Distance</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="5.2 km"
-                                    className="w-full bg-slate-800 text-white p-4 rounded-xl border border-slate-700 focus:border-cyan-500 outline-none"
-                                />
+                                <label class="block text-white font-semibold mb-2">Distance</label>
+                                <input type="text" placeholder="5.2 km" class="w-full bg-slate-800 text-white p-4 rounded-xl border border-slate-700 focus:border-cyan-500 outline-none">
                             </div>
-
                             <div>
-                                <label className="block text-white font-semibold mb-2">Notes (Optional)</label>
-                                <textarea 
-                                    placeholder="Felt great! Good pace throughout..."
-                                    className="w-full bg-slate-800 text-white p-4 rounded-xl border border-slate-700 focus:border-cyan-500 outline-none h-32"
-                                />
+                                <label class="block text-white font-semibold mb-2">Notes (Optional)</label>
+                                <textarea placeholder="Felt great! Good pace throughout..." class="w-full bg-slate-800 text-white p-4 rounded-xl border border-slate-700 focus:border-cyan-500 outline-none h-32"></textarea>
                             </div>
                         </div>
 
-                        <button 
-                            onClick={() => setCurrentPage('dashboard')}
-                            className="w-full bg-cyan-500 text-white py-4 rounded-full font-bold text-lg hover:bg-cyan-600 transition mt-6"
-                        >
+                        <button data-page="dashboard" class="w-full bg-cyan-500 text-white py-4 rounded-full font-bold text-lg hover:bg-cyan-600 transition mt-6 cursor-pointer">
                             SAVE WORKOUT
                         </button>
                     </div>
-                </div>
-            );
 
-            // Goals Component
-            const Goals = () => (
-                <div className="pb-20">
-                    <div className="bg-slate-800 p-6 border-b border-slate-700">
-                        <div className="flex justify-between items-center">
-                            <button onClick={() => setCurrentPage('dashboard')} className="text-cyan-400">← Back</button>
-                            <h1 className="text-xl font-bold text-white">My Goals</h1>
-                            <button className="text-cyan-400 text-2xl font-bold">+</button>
+                    ${renderBottomNav('activity')}
+                </div>
+            `;
+        }
+
+        function renderGoals() {
+            return `
+                <div class="min-h-screen bg-slate-900 max-w-2xl mx-auto pb-20">
+                    <div class="bg-slate-800 p-6 border-b border-slate-700">
+                        <div class="flex justify-between items-center">
+                            <button data-page="dashboard" class="text-cyan-400 cursor-pointer">← Back</button>
+                            <h1 class="text-xl font-bold text-white">My Goals</h1>
+                            <button class="text-cyan-400 text-2xl font-bold cursor-pointer">+</button>
                         </div>
                     </div>
 
-                    <div className="p-6">
-                        <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6 rounded-2xl mb-8 text-center">
-                            <p className="text-4xl mb-2">🔥</p>
-                            <p className="text-2xl font-bold text-white mb-1">{streak} Day Streak!</p>
-                            <p className="text-white/90 text-sm">Keep going! You're doing amazing!</p>
+                    <div class="p-6">
+                        <div class="bg-gradient-to-r from-orange-500 to-red-500 p-6 rounded-2xl mb-8 text-center">
+                            <p class="text-4xl mb-2">🔥</p>
+                            <p class="text-2xl font-bold text-white mb-1">${streak} Day Streak!</p>
+                            <p class="text-white/90 text-sm">Keep going! You're doing amazing!</p>
                         </div>
 
-                        <h3 className="text-lg font-bold text-white mb-4">Active Goals</h3>
+                        <h3 class="text-lg font-bold text-white mb-4">Active Goals</h3>
                         
-                        {goals.map((goal, idx) => (
-                            <div key={idx} className="bg-slate-800 p-6 rounded-2xl mb-4">
-                                <div className="flex justify-between items-start mb-3">
+                        ${goals.map(goal => `
+                            <div class="bg-slate-800 p-6 rounded-2xl mb-4">
+                                <div class="flex justify-between items-start mb-3">
                                     <div>
-                                        <p className="text-white font-bold text-lg">{goal.name}</p>
-                                        <p className="text-gray-400 text-sm">{goal.current}</p>
+                                        <p class="text-white font-bold text-lg">${goal.name}</p>
+                                        <p class="text-gray-400 text-sm">${goal.current}</p>
                                     </div>
-                                    <span className="text-xl font-bold" style={{ color: goal.color }}>{goal.progress}%</span>
+                                    <span class="text-xl font-bold" style="color: ${goal.color}">${goal.progress}%</span>
                                 </div>
-                                <div className="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
-                                    <div 
-                                        className="h-full rounded-full transition-all duration-500"
-                                        style={{ width: `${goal.progress}%`, backgroundColor: goal.color }}
-                                    />
+                                <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-500" style="width: ${goal.progress}%; background-color: ${goal.color}"></div>
                                 </div>
                             </div>
-                        ))}
+                        `).join('')}
 
-                        <h3 className="text-lg font-bold text-white mb-4 mt-8">Recent Achievements</h3>
+                        <h3 class="text-lg font-bold text-white mb-4 mt-8">Recent Achievements</h3>
 
-                        {[
+                        ${[
                             { emoji: '🏆', title: 'First 5K', desc: 'Completed first 5km run' },
                             { emoji: '⭐', title: 'Consistent', desc: '7 days logging streak' },
                             { emoji: '💪', title: 'Strong', desc: '10 strength workouts' }
-                        ].map((achievement, idx) => (
-                            <div key={idx} className="bg-slate-800 p-4 rounded-xl mb-3 flex items-center gap-4">
-                                <div className="text-4xl">{achievement.emoji}</div>
+                        ].map(achievement => `
+                            <div class="bg-slate-800 p-4 rounded-xl mb-3 flex items-center gap-4">
+                                <div class="text-4xl">${achievement.emoji}</div>
                                 <div>
-                                    <p className="text-white font-semibold">{achievement.title}</p>
-                                    <p className="text-sm text-gray-400">{achievement.desc}</p>
+                                    <p class="text-white font-semibold">${achievement.title}</p>
+                                    <p class="text-sm text-gray-400">${achievement.desc}</p>
                                 </div>
                             </div>
-                        ))}
+                        `).join('')}
 
-                        <button className="w-full bg-slate-800 border-2 border-cyan-500 text-cyan-400 py-4 rounded-full font-bold hover:bg-slate-700 transition mt-6">
+                        <button class="w-full bg-slate-800 border-2 border-cyan-500 text-cyan-400 py-4 rounded-full font-bold hover:bg-slate-700 transition mt-6 cursor-pointer">
                             + SET NEW GOAL
                         </button>
                     </div>
-                </div>
-            );
 
-            // Bottom Navigation
-            const BottomNav = () => (
-                <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 px-6 py-3">
-                    <div className="max-w-2xl mx-auto flex justify-around">
-                        {[
-                            { icon: '🏠', label: 'Home', page: 'dashboard' },
-                            { icon: '📊', label: 'Activity', page: 'activity' },
-                            { icon: '🎯', label: 'Goals', page: 'goals' },
-                            { icon: '👥', label: 'Social', page: 'dashboard' }
-                        ].map(item => (
-                            <button 
-                                key={item.label}
-                                onClick={() => setCurrentPage(item.page)}
-                                className={`flex flex-col items-center gap-1 transition ${currentPage === item.page ? 'text-cyan-400' : 'text-gray-400 hover:text-gray-300'}`}
-                            >
-                                <span className="text-2xl">{item.icon}</span>
-                                <span className="text-xs font-medium">{item.label}</span>
+                    ${renderBottomNav('goals')}
+                </div>
+            `;
+        }
+
+        function renderBottomNav(active) {
+            const items = [
+                { icon: '🏠', label: 'Home', page: 'dashboard' },
+                { icon: '📊', label: 'Activity', page: 'activity' },
+                { icon: '🎯', label: 'Goals', page: 'goals' },
+                { icon: '👥', label: 'Social', page: 'dashboard' }
+            ];
+
+            return `
+                <div class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 px-6 py-3">
+                    <div class="max-w-2xl mx-auto flex justify-around">
+                        ${items.map(item => `
+                            <button data-page="${item.page}" class="flex flex-col items-center gap-1 transition cursor-pointer ${active === item.page ? 'text-cyan-400' : 'text-gray-400 hover:text-gray-300'}">
+                                <span class="text-2xl">${item.icon}</span>
+                                <span class="text-xs font-medium">${item.label}</span>
                             </button>
-                        ))}
+                        `).join('')}
                     </div>
                 </div>
-            );
+            `;
+        }
 
-            return (
-                <div className="min-h-screen bg-slate-900 text-white max-w-2xl mx-auto relative">
-                    {currentPage === 'landing' && <LandingPage />}
-                    {currentPage === 'dashboard' && (
-                        <>
-                            <Dashboard />
-                            <BottomNav />
-                        </>
-                    )}
-                    {currentPage === 'activity' && (
-                        <>
-                            <ActivityLogging />
-                            <BottomNav />
-                        </>
-                    )}
-                    {currentPage === 'goals' && (
-                        <>
-                            <Goals />
-                            <BottomNav />
-                        </>
-                    )}
-                </div>
-            );
-        };
-
-        ReactDOM.render(<VitalFlowApp />, document.getElementById('root'));
+        // Initial render
+        render();
     </script>
 </body>
 </html>
